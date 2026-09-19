@@ -1,0 +1,653 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EUBR Envíos · Rastreo de paquetes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#08203D;          /* navy base */
+    --ink-2:#0C2A4E;        /* elevated panel */
+    --ink-3:#123561;        /* borders / lines on dark */
+    --paper:#F5F8FC;        /* light content bg */
+    --card:#FFFFFF;
+    --line:#E3EAF3;         /* borders on light */
+    --text:#0B2545;         /* dark text on light */
+    --muted:#5B7089;        /* muted text on light */
+    --muted-d:#9FB6D1;      /* muted text on dark */
+    --sea:#1FC7BD;          /* teal · movimiento */
+    --sea-d:#12A79E;
+    --coral:#FF5C49;        /* CTA / marca */
+    --coral-d:#E8422F;
+    --green:#2FCB93;        /* entregado */
+    --amber:#FFC24B;
+    --shadow:0 18px 50px -20px rgba(8,32,61,.45);
+    --shadow-sm:0 6px 20px -10px rgba(8,32,61,.35);
+    --r:16px;
+    --r-lg:24px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    color:var(--text);background:var(--paper);
+    -webkit-font-smoothing:antialiased;line-height:1.55;
+  }
+  h1,h2,h3{font-family:'Sora',system-ui,sans-serif;line-height:1.08;margin:0;letter-spacing:-.02em}
+  a{color:inherit}
+  button{font-family:inherit}
+  .wrap{width:min(1120px,92vw);margin-inline:auto}
+
+  /* ---------- top bar ---------- */
+  header.nav{position:sticky;top:0;z-index:40;background:rgba(8,32,61,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--ink-3)}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+  .brand{display:flex;align-items:center;gap:11px;color:#fff;font-family:'Sora';font-weight:800;font-size:19px;letter-spacing:-.01em;cursor:pointer;background:none;border:0;padding:0}
+  .logo{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(140deg,var(--sea),#0f8f9c);box-shadow:0 6px 18px -6px rgba(31,199,189,.7)}
+  .logo svg{width:22px;height:22px}
+  .brand small{display:block;font-family:'Inter';font-weight:500;font-size:11px;color:var(--sea);letter-spacing:.06em;margin-top:1px}
+  .nav-link{color:var(--muted-d);font-size:14px;font-weight:500;text-decoration:none;border:1px solid transparent;padding:8px 14px;border-radius:10px;cursor:pointer;background:none}
+  .nav-link:hover{color:#fff;border-color:var(--ink-3)}
+
+  /* ---------- hero ---------- */
+  .hero{background:radial-gradient(1200px 500px at 78% -10%,rgba(31,199,189,.16),transparent 60%),linear-gradient(180deg,var(--ink),#061a31);color:#fff;position:relative;overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1px);background-size:26px 26px;mask-image:linear-gradient(180deg,#000 30%,transparent 92%);pointer-events:none}
+  .hero-in{position:relative;padding:64px 0 72px;display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--sea);background:rgba(31,199,189,.12);border:1px solid rgba(31,199,189,.3);padding:6px 12px;border-radius:999px}
+  .hero h1{font-size:clamp(32px,5vw,52px);font-weight:800;margin:18px 0 14px;color:#fff}
+  .hero p.lead{color:var(--muted-d);font-size:clamp(15px,1.6vw,18px);max-width:46ch;margin:0 0 26px}
+
+  .search{background:#fff;border-radius:var(--r);padding:8px;display:flex;gap:8px;box-shadow:var(--shadow);max-width:520px}
+  .search input{flex:1;border:0;outline:0;padding:14px 16px;font-size:16px;color:var(--text);background:transparent;border-radius:10px}
+  .search input::placeholder{color:#9aa9bd}
+  .btn{border:0;cursor:pointer;border-radius:11px;font-weight:600;font-size:15px;padding:14px 22px;transition:transform .12s ease,box-shadow .2s ease,background .2s}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--coral);color:#fff;box-shadow:0 10px 24px -10px rgba(255,92,73,.8)}
+  .btn-primary:hover{background:var(--coral-d)}
+  .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
+  .btn-ghost:hover{border-color:#c7d3e2}
+  .btn-teal{background:var(--sea);color:#04322f}
+  .btn-teal:hover{background:var(--sea-d);color:#fff}
+  .hero .hint{margin-top:12px;font-size:13px;color:var(--muted-d)}
+  .hero .hint b{color:#fff;font-weight:600}
+  .try{background:none;border:0;color:var(--sea);cursor:pointer;font:inherit;font-size:13px;text-decoration:underline;padding:0}
+
+  /* route illustration */
+  .route-card{background:linear-gradient(160deg,#0d2b4f,#0a2340);border:1px solid var(--ink-3);border-radius:var(--r-lg);padding:26px;box-shadow:var(--shadow)}
+  .route-head{display:flex;justify-content:space-between;font-size:12px;color:var(--muted-d);margin-bottom:8px;font-weight:500}
+  .route-svg{width:100%;height:auto;display:block}
+  .route-endpoints{display:flex;justify-content:space-between;margin-top:14px}
+  .endpoint{display:flex;flex-direction:column;gap:2px}
+  .endpoint b{color:#fff;font-size:15px;font-family:'Sora';font-weight:600}
+  .endpoint span{color:var(--muted-d);font-size:12px}
+  .endpoint.r{text-align:right}
+  .route-note{margin-top:16px;padding-top:16px;border-top:1px solid var(--ink-3);display:flex;gap:20px;font-size:12.5px;color:var(--muted-d)}
+  .route-note div b{display:block;color:var(--sea);font-family:'Sora';font-size:17px;font-weight:700}
+
+  /* trust strip */
+  .strip{background:var(--ink);border-top:1px solid var(--ink-3);color:#fff}
+  .strip-in{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;padding:34px 0}
+  .feat{display:flex;gap:14px;align-items:flex-start}
+  .feat .ic{width:42px;height:42px;flex:none;border-radius:12px;background:rgba(31,199,189,.13);border:1px solid rgba(31,199,189,.3);display:grid;place-items:center}
+  .feat .ic svg{width:22px;height:22px;stroke:var(--sea)}
+  .feat h3{font-size:15px;color:#fff;margin-bottom:3px}
+  .feat p{margin:0;font-size:13px;color:var(--muted-d)}
+
+  /* ---------- result ---------- */
+  .result-sec{padding:44px 0 70px;min-height:40vh}
+  .result-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-sm);overflow:hidden}
+  .rc-top{padding:24px 26px;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fbfdff,#fff)}
+  .rc-track{font-family:'Sora';font-weight:700;font-size:22px;color:var(--text)}
+  .rc-track small{display:block;font-family:'Inter';font-weight:500;font-size:12px;color:var(--muted);letter-spacing:.04em;margin-bottom:2px}
+  .pill{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;font-weight:600;font-size:14px}
+  .pill .dot{width:8px;height:8px;border-radius:50%}
+  .pill.progress{background:rgba(31,199,189,.12);color:var(--sea-d)}
+  .pill.progress .dot{background:var(--sea);box-shadow:0 0 0 4px rgba(31,199,189,.22);animation:pulse 1.8s infinite}
+  .pill.done{background:rgba(47,203,147,.14);color:#1f9c6f}
+  .pill.done .dot{background:var(--green)}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(31,199,189,.35)}70%{box-shadow:0 0 0 8px rgba(31,199,189,0)}100%{box-shadow:0 0 0 0 rgba(31,199,189,0)}}
+
+  /* journey bar */
+  .journey{padding:30px 26px 8px}
+  .jbar{position:relative;height:4px;background:var(--line);border-radius:999px;margin:34px 8px 6px}
+  .jfill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--sea),var(--green));border-radius:999px;transition:width .9s cubic-bezier(.22,1,.36,1)}
+  .jplane{position:absolute;top:50%;transform:translate(-50%,-50%);transition:left .9s cubic-bezier(.22,1,.36,1)}
+  .jplane .disc{width:38px;height:38px;border-radius:50%;background:#fff;border:2px solid var(--sea);box-shadow:0 8px 18px -6px rgba(31,199,189,.7);display:grid;place-items:center}
+  .jplane svg{width:20px;height:20px;fill:var(--sea)}
+  .jends{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:600}
+  .jends .flag{font-size:15px;margin-right:5px}
+
+  /* timeline */
+  .grid-body{display:grid;grid-template-columns:1.4fr 1fr;gap:0}
+  .timeline{padding:24px 26px 30px;border-right:1px solid var(--line)}
+  .timeline h4,.details h4{font-family:'Sora';font-size:13px;letter-spacing:.02em;color:var(--muted);font-weight:600;margin:0 0 18px}
+  .step{position:relative;padding:0 0 22px 40px}
+  .step:last-child{padding-bottom:0}
+  .step::before{content:"";position:absolute;left:13px;top:26px;bottom:-4px;width:2px;background:var(--line)}
+  .step:last-child::before{display:none}
+  .step.reached::before{background:var(--sea)}
+  .node{position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#fff;border:2px solid var(--line);color:var(--muted)}
+  .step.reached .node{border-color:var(--sea);background:var(--sea);color:#04322f}
+  .step.current .node{border-color:var(--sea);background:#fff;color:var(--sea-d);box-shadow:0 0 0 5px rgba(31,199,189,.18)}
+  .step.done-final .node{background:var(--green);border-color:var(--green);color:#063d2b}
+  .node svg{width:15px;height:15px}
+  .step .st{font-weight:600;font-size:15px;color:var(--text)}
+  .step.pending .st{color:#9aa9bd}
+  .step .sd{font-size:13px;color:var(--muted);margin-top:2px}
+  .step .stime{font-size:12px;color:var(--sea-d);font-weight:600;margin-top:4px}
+  .step .snote{font-size:12.5px;color:var(--muted);margin-top:4px;background:var(--paper);border-radius:8px;padding:6px 10px}
+
+  .details{padding:24px 26px 30px}
+  .drow{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  .drow:last-child{border-bottom:0}
+  .drow .k{color:var(--muted)}
+  .drow .v{font-weight:600;color:var(--text);text-align:right}
+  .wa{margin-top:18px;display:flex;align-items:center;gap:8px;justify-content:center;width:100%;background:#25D366;color:#053d1e;font-weight:600;border:0;border-radius:11px;padding:13px;cursor:pointer;text-decoration:none;font-size:14px}
+  .wa svg{width:18px;height:18px}
+
+  /* empty / not found */
+  .msg{max-width:520px;margin:10px auto;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:42px 30px;box-shadow:var(--shadow-sm)}
+  .msg .mi{width:66px;height:66px;border-radius:20px;margin:0 auto 16px;display:grid;place-items:center;background:var(--paper)}
+  .msg .mi svg{width:32px;height:32px}
+  .msg h3{font-size:20px;margin-bottom:8px}
+  .msg p{color:var(--muted);margin:0 0 18px;font-size:14.5px}
+
+  /* ---------- admin ---------- */
+  .admin{display:none;padding:34px 0 80px;min-height:70vh}
+  .admin.show{display:block}
+  .customer.hide{display:none}
+  .a-head{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:end;margin-bottom:24px}
+  .a-head h2{font-size:26px;color:var(--text)}
+  .a-head p{margin:4px 0 0;color:var(--muted);font-size:14px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow-sm)}
+  .stat b{font-family:'Sora';font-size:26px;font-weight:700;color:var(--text);display:block}
+  .stat span{font-size:12.5px;color:var(--muted)}
+  .stat.t b{color:var(--sea-d)} .stat.g b{color:#1f9c6f}
+
+  .panels{display:grid;grid-template-columns:360px 1fr;gap:22px;align-items:start}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-sm)}
+  .panel-h{padding:18px 20px;border-bottom:1px solid var(--line);font-family:'Sora';font-weight:600;font-size:16px}
+  .panel-b{padding:20px}
+  label.fl{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin:0 0 6px}
+  .field{margin-bottom:14px}
+  .inp{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:14px;color:var(--text);outline:0;background:#fff;font-family:inherit}
+  .inp:focus{border-color:var(--sea);box-shadow:0 0 0 3px rgba(31,199,189,.16)}
+  textarea.inp{resize:vertical;min-height:64px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .gen{display:flex;gap:8px}
+  .gen .inp{flex:1}
+  .genbtn{border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:0 13px;font-size:12.5px;font-weight:600;color:var(--sea-d);cursor:pointer;white-space:nowrap}
+  .genbtn:hover{border-color:var(--sea)}
+
+  .search-admin{display:flex;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line)}
+  .search-admin .inp{flex:1}
+  .plist{max-height:640px;overflow:auto}
+  .prow{display:grid;grid-template-columns:1fr auto;gap:12px;padding:15px 20px;border-bottom:1px solid var(--line);align-items:center}
+  .prow:last-child{border-bottom:0}
+  .prow .track{font-family:'Sora';font-weight:700;font-size:15px;color:var(--text)}
+  .prow .who{font-size:13px;color:var(--muted);margin-top:1px}
+  .prow .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+  .selstat{border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:13px;color:var(--text);background:#fff;font-family:inherit;cursor:pointer;max-width:190px}
+  .selstat:focus{border-color:var(--sea);outline:0}
+  .icon-btn{border:1px solid var(--line);background:#fff;border-radius:9px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;color:var(--muted)}
+  .icon-btn:hover{border-color:var(--coral);color:var(--coral)}
+  .icon-btn svg{width:16px;height:16px}
+  .tag{font-size:11px;font-weight:600;padding:4px 9px;border-radius:999px;white-space:nowrap}
+  .empty-admin{padding:50px 20px;text-align:center;color:var(--muted);font-size:14px}
+
+  /* login */
+  .login{max-width:400px;margin:60px auto;background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:34px;box-shadow:var(--shadow);text-align:center}
+  .login .logo{width:52px;height:52px;margin:0 auto 16px}
+  .login h2{font-size:22px;margin-bottom:6px}
+  .login p{color:var(--muted);font-size:14px;margin:0 0 22px}
+  .login .inp{text-align:center;margin-bottom:12px}
+  .err{color:var(--coral-d);font-size:13px;font-weight:600;min-height:18px;margin-bottom:8px}
+
+  /* toast */
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:13px 22px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.28s;z-index:80;display:flex;gap:9px;align-items:center}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast svg{width:18px;height:18px;stroke:var(--sea)}
+
+  footer.ft{background:var(--ink);color:var(--muted-d);border-top:1px solid var(--ink-3);padding:26px 0;font-size:13px}
+  .ft-in{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center}
+  .ft b{color:#fff}
+
+  .banner{background:#fff4e5;color:#8a5a00;border:1px solid #ffe0ad;border-radius:12px;padding:12px 16px;font-size:13px;margin:16px 0}
+
+  @media (max-width:900px){
+    .hero-in{grid-template-columns:1fr;gap:34px;padding:44px 0 54px}
+    .route-card{order:2}
+    .strip-in{grid-template-columns:1fr;gap:18px;padding:26px 0}
+    .grid-body{grid-template-columns:1fr}
+    .timeline{border-right:0;border-bottom:1px solid var(--line)}
+    .panels{grid-template-columns:1fr}
+    .stats{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:560px){
+    .search{flex-direction:column}
+    .btn-primary{width:100%}
+    .rc-top{flex-direction:column;align-items:flex-start}
+    .two{grid-template-columns:1fr}
+    .prow{grid-template-columns:1fr}
+    .prow .actions{justify-content:flex-start}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+  .focusable:focus-visible{outline:3px solid var(--sea);outline-offset:2px;border-radius:8px}
+</style>
+
+<!-- ===================== CUSTOMER VIEW ===================== -->
+<div class="customer" id="customerView">
+<header class="nav">
+  <div class="wrap nav-in">
+    <button class="brand focusable" onclick="goHome()" aria-label="Inicio EUBR Envíos">
+      <span class="logo"><svg viewBox="0 0 24 24" fill="none"><path d="M3 13.5 12 4l9 9.5M5 11.5V20h14v-8.5" stroke="#04322f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 20v-5h4v5" stroke="#04322f" stroke-width="2" stroke-linejoin="round"/></svg></span>
+      <span>EUBR Envíos<small>EE.UU. → REP. DOMINICANA</small></span>
+    </button>
+    <button class="nav-link focusable" onclick="openAdmin()">Acceso administrador</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-in">
+    <div>
+      <span class="eyebrow"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#1FC7BD" stroke-width="2"/><path d="M12 7v5l3 2" stroke="#1FC7BD" stroke-width="2" stroke-linecap="round"/></svg> Seguimiento en tiempo real</span>
+      <h1>Rastrea tu envío de Estados Unidos a República Dominicana</h1>
+      <p class="lead">Escribe el número que recibiste por correo o WhatsApp y mira exactamente dónde va tu paquete, desde nuestro almacén en Miami hasta tu puerta.</p>
+      <div class="search">
+        <input id="trackInput" class="focusable" type="text" inputmode="latin" autocomplete="off"
+               placeholder="Ej: EUBR-100245" aria-label="Número de rastreo"
+               onkeydown="if(event.key==='Enter')doTrack()">
+        <button class="btn btn-primary focusable" onclick="doTrack()">Rastrear</button>
+      </div>
+      <p class="hint">¿No sabes tu número? Búscalo en el correo de confirmación. <button class="try focusable" onclick="tryDemo()">Ver un ejemplo</button></p>
+    </div>
+
+    <div class="route-card" aria-hidden="true">
+      <div class="route-head"><span>Ruta del envío</span><span>≈ 1.450 km</span></div>
+      <svg class="route-svg" viewBox="0 0 380 150">
+        <defs>
+          <linearGradient id="rg" x1="0" x2="1"><stop offset="0" stop-color="#1FC7BD"/><stop offset="1" stop-color="#2FCB93"/></linearGradient>
+        </defs>
+        <path d="M40 40 C 150 -6, 240 130, 340 108" fill="none" stroke="#123561" stroke-width="2.5"/>
+        <path d="M40 40 C 150 -6, 240 130, 340 108" fill="none" stroke="url(#rg)" stroke-width="2.5" stroke-dasharray="7 8" stroke-linecap="round">
+          <animate attributeName="stroke-dashoffset" from="60" to="0" dur="2.2s" repeatCount="indefinite"/>
+        </path>
+        <circle cx="40" cy="40" r="7" fill="#FF5C49"/><circle cx="40" cy="40" r="12" fill="none" stroke="#FF5C49" stroke-opacity=".35" stroke-width="2"/>
+        <circle cx="340" cy="108" r="7" fill="#2FCB93"/><circle cx="340" cy="108" r="12" fill="none" stroke="#2FCB93" stroke-opacity=".35" stroke-width="2"/>
+        <g>
+          <circle cx="190" cy="42" r="15" fill="#fff"/>
+          <path d="M190 34 l6 8 -6 -1.5 -6 1.5 z" fill="#1FC7BD" transform="rotate(28 190 42)"/>
+          <animateMotion dur="4.5s" repeatCount="indefinite" rotate="auto" path="M40 40 C 150 -6, 240 130, 340 108"/>
+        </g>
+      </svg>
+      <div class="route-endpoints">
+        <div class="endpoint"><b>🇺🇸 Miami, FL</b><span>Almacén de origen</span></div>
+        <div class="endpoint r"><b>Santo Domingo 🇩🇴</b><span>Destino en RD</span></div>
+      </div>
+      <div class="route-note">
+        <div><b>Aéreo + marítimo</b>Modalidades disponibles</div>
+        <div><b>Puerta a puerta</b>Entrega en todo el país</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="strip">
+  <div class="wrap strip-in">
+    <div class="feat"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg></span><div><h3>Estado siempre actualizado</h3><p>Cada etapa del viaje, con fecha y hora, sin llamar a nadie.</p></div></div>
+    <div class="feat"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9 6 9-6"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg></span><div><h3>Un solo número</h3><p>El código de tu correo o WhatsApp es todo lo que necesitas.</p></div></div>
+    <div class="feat"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-7-10a7 7 0 0114 0c0 5.5-7 10-7 10z"/><circle cx="12" cy="11" r="2.5"/></svg></span><div><h3>De Miami a tu puerta</h3><p>Seguimos tu paquete hasta la entrega final en RD.</p></div></div>
+  </div>
+</section>
+
+<section class="result-sec">
+  <div class="wrap" id="resultArea"><!-- rendered by JS --></div>
+</section>
+</div><!-- /customer -->
+
+<!-- ===================== ADMIN VIEW ===================== -->
+<div class="admin" id="adminView">
+  <div class="wrap">
+    <!-- login -->
+    <div id="loginBox" class="login">
+      <span class="logo"><svg viewBox="0 0 24 24" fill="none"><path d="M6 10V8a6 6 0 1112 0v2" stroke="#04322f" stroke-width="2" stroke-linecap="round"/><rect x="4" y="10" width="16" height="10" rx="2" fill="#04322f"/></svg></span>
+      <h2>Panel de EUBR</h2>
+      <p>Ingresa la clave para administrar los envíos.</p>
+      <input id="pass" class="inp focusable" type="password" placeholder="Clave de administrador"
+             onkeydown="if(event.key==='Enter')login()">
+      <div class="err" id="loginErr"></div>
+      <button class="btn btn-primary focusable" style="width:100%" onclick="login()">Entrar</button>
+      <button class="nav-link focusable" style="color:var(--muted);margin-top:14px" onclick="goHome()">← Volver al inicio</button>
+    </div>
+
+    <!-- dashboard -->
+    <div id="dashBox" style="display:none">
+      <div class="a-head">
+        <div><h2>Envíos</h2><p>Registra paquetes y actualiza su estado. Los clientes lo ven al instante.</p></div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost focusable" onclick="goHome()">Ver sitio público</button>
+          <button class="btn btn-ghost focusable" onclick="logout()">Salir</button>
+        </div>
+      </div>
+
+      <div id="storeBanner"></div>
+
+      <div class="stats">
+        <div class="stat"><b id="stTotal">0</b><span>Paquetes totales</span></div>
+        <div class="stat t"><b id="stTransit">0</b><span>En tránsito</span></div>
+        <div class="stat g"><b id="stDone">0</b><span>Entregados</span></div>
+        <div class="stat"><b id="stToday">0</b><span>Registrados hoy</span></div>
+      </div>
+
+      <div class="panels">
+        <div class="panel">
+          <div class="panel-h">Registrar paquete</div>
+          <div class="panel-b">
+            <div class="field"><label class="fl">Número de rastreo</label>
+              <div class="gen">
+                <input id="fTrack" class="inp" placeholder="EUBR-100245">
+                <button class="genbtn focusable" onclick="genTrack()">Generar</button>
+              </div>
+            </div>
+            <div class="field"><label class="fl">Nombre del cliente</label><input id="fName" class="inp" placeholder="Ej: María Peña"></div>
+            <div class="field"><label class="fl">WhatsApp / teléfono</label><input id="fPhone" class="inp" placeholder="Ej: 809 555 1234"></div>
+            <div class="field"><label class="fl">Descripción del contenido</label><input id="fDesc" class="inp" placeholder="Ej: 2 cajas de ropa"></div>
+            <div class="two">
+              <div class="field"><label class="fl">Peso (lb)</label><input id="fWeight" class="inp" type="number" min="0" step="0.1" placeholder="0"></div>
+              <div class="field"><label class="fl">Sucursal / destino</label><input id="fBranch" class="inp" placeholder="Santo Domingo"></div>
+            </div>
+            <div class="field"><label class="fl">Estado inicial</label><select id="fStatus" class="inp"></select></div>
+            <button class="btn btn-teal focusable" style="width:100%" onclick="addPackage()">Guardar paquete</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="search-admin">
+            <input id="adminSearch" class="inp focusable" placeholder="Buscar por número o cliente…" oninput="renderAdminList()">
+          </div>
+          <div class="plist" id="adminList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="ft">
+  <div class="wrap ft-in">
+    <span><b>EUBR Envíos</b> · Miami → República Dominicana</span>
+    <span>Rastreo de paquetes · <span id="year"></span></span>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ CONFIG ============ */
+const ADMIN_PASS = "eubr2026";           // 🔒 cámbiala por la tuya
+const WHATSAPP_BASE = "https://wa.me/18095551234"; // pon tu número de EUBR
+const STORE_KEY = "eubr:packages:v1";
+
+/* Etapas del viaje EE.UU. → RD */
+const STATUSES = [
+  {k:"Recibido en almacén Miami", d:"Tu paquete llegó a nuestro almacén en Miami.", ic:"📦"},
+  {k:"En preparación",            d:"Procesando y empacando tu envío.",             ic:"🏷️"},
+  {k:"En tránsito hacia RD",      d:"Tu paquete va en camino a República Dominicana.", ic:"✈️"},
+  {k:"En aduana (RD)",            d:"En proceso de despacho aduanal.",              ic:"🛃"},
+  {k:"En sucursal",               d:"Listo para retiro en nuestra sucursal.",       ic:"🏢"},
+  {k:"En ruta de entrega",        d:"Nuestro mensajero lleva tu paquete a tu dirección.", ic:"🚚"},
+  {k:"Entregado",                 d:"¡Entregado! Gracias por confiar en EUBR.",     ic:"✅"}
+];
+
+/* ============ STORAGE (persistente, compartido) ============ */
+let mem = {};                       // respaldo en memoria si no hay window.storage
+const hasStore = typeof window !== "undefined" && window.storage;
+async function loadAll(){
+  if(!hasStore) return mem;
+  try{ const r = await window.storage.get(STORE_KEY, true); return r && r.value ? JSON.parse(r.value) : {}; }
+  catch(e){ return {}; }
+}
+async function saveAll(obj){
+  mem = obj;
+  if(!hasStore) return false;
+  try{ await window.storage.set(STORE_KEY, JSON.stringify(obj), true); return true; }
+  catch(e){ console.error(e); return false; }
+}
+
+/* ============ HELPERS ============ */
+const $ = s => document.querySelector(s);
+function fmtDate(ts){
+  try{ return new Date(ts).toLocaleString("es-DO",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}); }
+  catch(e){ return new Date(ts).toLocaleString(); }
+}
+function toast(msg){
+  const t=$("#toast");
+  t.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'+msg;
+  t.classList.add("show"); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),2600);
+}
+function esc(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+/* ============ CUSTOMER: rastreo ============ */
+async function doTrack(){
+  const q = $("#trackInput").value.trim().toUpperCase();
+  const area = $("#resultArea");
+  if(!q){ area.innerHTML=""; $("#trackInput").focus(); return; }
+  const all = await loadAll();
+  const p = all[q];
+  if(!p){ area.innerHTML = notFound(q); return; }
+  area.innerHTML = renderResult(p);
+  requestAnimationFrame(()=>{ // animar barra
+    const f=area.querySelector(".jfill"), pl=area.querySelector(".jplane");
+    const pct = (p.status/(STATUSES.length-1))*100;
+    if(f) f.style.width = pct+"%";
+    if(pl) pl.style.left = pct+"%";
+  });
+  area.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function tryDemo(){ $("#trackInput").value="EUBR-DEMO01"; doTrack(); }
+
+function notFound(q){
+  return `<div class="msg">
+    <div class="mi"><svg viewBox="0 0 24 24" fill="none" stroke="#FF5C49" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/><path d="M11 8v3M11 14h.01"/></svg></div>
+    <h3>No encontramos ese número</h3>
+    <p>Revisa que <b>${esc(q)}</b> esté escrito igual que en tu correo o WhatsApp. Si crees que hay un error, escríbenos.</p>
+    <a class="wa focusable" style="max-width:260px;margin:0 auto" href="${WHATSAPP_BASE}" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15l-1 3.6 3.7-1A10 10 0 1012 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.7-.1-.4-.1-.9-.3-1.6-.6-2.8-1.2-4.6-4-4.7-4.2-.2-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.4.6c-.2.2-.3.4-.1.6.2.4.9 1.4 1.9 2.3 1.3 1.1 2 1.3 2.3 1.1.1-.1.4-.4.6-.6.2-.2.3-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.3.1.7 0 1z"/></svg>
+      Escríbenos por WhatsApp
+    </a></div>`;
+}
+
+function renderResult(p){
+  const s = p.status;
+  const cur = STATUSES[s];
+  const delivered = s === STATUSES.length-1;
+  const pillCls = delivered ? "done" : "progress";
+  const pillTxt = delivered ? "Entregado" : "En proceso";
+  // historial por etapa
+  const stamps = {};
+  (p.history||[]).forEach(h=>{ stamps[h.status]=h; });
+
+  const steps = STATUSES.map((st,i)=>{
+    const reached = i <= s;
+    let cls = "step " + (i<s?"reached done-mid": i===s?(delivered?"reached done-final current":"reached current"):"pending");
+    if(reached && i<s) cls="step reached";
+    if(i===s) cls="step reached current" + (delivered?" done-final":"");
+    if(i>s) cls="step pending";
+    const check = i<s ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
+                     : (i===s ? '<span style="font-size:12px">'+st.ic+'</span>' : '<span style="width:7px;height:7px;border-radius:50%;background:#cdd8e6;display:block"></span>');
+    const h = stamps[i];
+    const time = h ? `<div class="stime">${fmtDate(h.date)}</div>` : "";
+    const note = (h && h.note) ? `<div class="snote">${esc(h.note)}</div>` : "";
+    return `<div class="${cls}"><span class="node">${check}</span>
+      <div class="st">${st.k}</div><div class="sd">${st.d}</div>${time}${note}</div>`;
+  }).join("");
+
+  const waMsg = encodeURIComponent(`Hola EUBR, consulta sobre mi envío ${p.track}`);
+  return `<div class="result-card">
+    <div class="rc-top">
+      <div class="rc-track"><small>NÚMERO DE RASTREO</small>${esc(p.track)}</div>
+      <span class="pill ${pillCls}"><span class="dot"></span>${pillTxt} · ${esc(cur.k)}</span>
+    </div>
+
+    <div class="journey">
+      <div class="jbar">
+        <div class="jfill" style="width:0%"></div>
+        <div class="jplane" style="left:0%"><span class="disc"><svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 00-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L11 19v-5.5z"/></svg></span></div>
+      </div>
+      <div class="jends"><span><span class="flag">🇺🇸</span>Miami</span><span>Santo Domingo<span class="flag" style="margin:0 0 0 5px">🇩🇴</span></span></div>
+    </div>
+
+    <div class="grid-body">
+      <div class="timeline">
+        <h4>Historial del envío</h4>
+        ${steps}
+      </div>
+      <div class="details">
+        <h4>Detalles</h4>
+        <div class="drow"><span class="k">Cliente</span><span class="v">${esc(p.name)||"—"}</span></div>
+        <div class="drow"><span class="k">Contenido</span><span class="v">${esc(p.desc)||"—"}</span></div>
+        <div class="drow"><span class="k">Peso</span><span class="v">${p.weight?esc(p.weight)+" lb":"—"}</span></div>
+        <div class="drow"><span class="k">Destino</span><span class="v">${esc(p.branch)||"Rep. Dominicana"}</span></div>
+        <div class="drow"><span class="k">Registrado</span><span class="v">${fmtDate(p.created)}</span></div>
+        <a class="wa focusable" href="${WHATSAPP_BASE}?text=${waMsg}" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15l-1 3.6 3.7-1A10 10 0 1012 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.7-.1-.4-.1-.9-.3-1.6-.6-2.8-1.2-4.6-4-4.7-4.2-.2-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.4.6c-.2.2-.3.4-.1.6.2.4.9 1.4 1.9 2.3 1.3 1.1 2 1.3 2.3 1.1.1-.1.4-.4.6-.6.2-.2.3-.2.6-.1l1.8.9c.2.1.4.2.4.3.1.3.1.7 0 1z"/></svg>
+          ¿Dudas? Escríbenos
+        </a>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============ ADMIN ============ */
+function openAdmin(){
+  $("#customerView").classList.add("hide");
+  $("#adminView").classList.add("show");
+  window.scrollTo(0,0);
+  $("#pass").focus();
+}
+function goHome(){
+  $("#adminView").classList.remove("show");
+  $("#customerView").classList.remove("hide");
+  window.scrollTo(0,0);
+}
+function login(){
+  const v=$("#pass").value;
+  if(v===ADMIN_PASS){ $("#loginErr").textContent=""; $("#pass").value="";
+    $("#loginBox").style.display="none"; $("#dashBox").style.display="block"; refreshDash(); }
+  else { $("#loginErr").textContent="Clave incorrecta. Intenta de nuevo."; }
+}
+function logout(){ $("#dashBox").style.display="none"; $("#loginBox").style.display="block"; }
+
+function genTrack(){
+  const n = 100000 + Math.floor(Math.random()*899999);
+  $("#fTrack").value = "EUBR-"+n;
+}
+async function addPackage(){
+  const track=$("#fTrack").value.trim().toUpperCase();
+  const name=$("#fName").value.trim();
+  if(!track){ toast("Escribe un número de rastreo"); $("#fTrack").focus(); return; }
+  if(!name){ toast("Escribe el nombre del cliente"); $("#fName").focus(); return; }
+  const all = await loadAll();
+  if(all[track]){ toast("Ese número ya existe"); return; }
+  const status = parseInt($("#fStatus").value,10)||0;
+  const now = Date.now();
+  const history=[]; for(let i=0;i<=status;i++) history.push({status:i,date:now});
+  all[track]={
+    track, name,
+    phone:$("#fPhone").value.trim(),
+    desc:$("#fDesc").value.trim(),
+    weight:$("#fWeight").value.trim(),
+    branch:$("#fBranch").value.trim(),
+    status, history, created:now
+  };
+  await saveAll(all);
+  // limpiar
+  ["fTrack","fName","fPhone","fDesc","fWeight","fBranch"].forEach(id=>$("#"+id).value="");
+  $("#fStatus").value="0";
+  toast("Paquete "+track+" guardado");
+  refreshDash();
+}
+
+async function updateStatus(track, newStatus){
+  const all=await loadAll(); const p=all[track]; if(!p) return;
+  newStatus=parseInt(newStatus,10);
+  p.status=newStatus;
+  p.history=p.history||[];
+  const has = p.history.some(h=>h.status===newStatus);
+  if(!has) p.history.push({status:newStatus,date:Date.now()});
+  p.history.sort((a,b)=>a.status-b.status);
+  await saveAll(all);
+  toast("Estado actualizado");
+  refreshDash();
+}
+async function delPackage(track){
+  const all=await loadAll(); if(!all[track]) return;
+  delete all[track]; await saveAll(all);
+  toast("Paquete eliminado"); refreshDash();
+}
+
+async function refreshDash(){
+  const all=await loadAll();
+  const list=Object.values(all);
+  const done=list.filter(p=>p.status===STATUSES.length-1).length;
+  const transit=list.filter(p=>p.status>0 && p.status<STATUSES.length-1).length;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const tday=list.filter(p=>p.created>=today.getTime()).length;
+  $("#stTotal").textContent=list.length;
+  $("#stTransit").textContent=transit;
+  $("#stDone").textContent=done;
+  $("#stToday").textContent=tday;
+  $("#storeBanner").innerHTML = hasStore ? "" :
+    '<div class="banner">⚠️ Estás viendo este archivo fuera de Claude, así que los datos <b>no se guardarán al cerrar</b>. Dentro de Claude sí se guardan de forma permanente.</div>';
+  renderAdminList();
+}
+
+async function renderAdminList(){
+  const all=await loadAll();
+  const q=($("#adminSearch").value||"").trim().toLowerCase();
+  let list=Object.values(all).sort((a,b)=>b.created-a.created);
+  if(q) list=list.filter(p=>(p.track+" "+p.name).toLowerCase().includes(q));
+  const box=$("#adminList");
+  if(list.length===0){
+    box.innerHTML='<div class="empty-admin">'+(q?"Ningún paquete coincide con la búsqueda.":"Aún no hay paquetes. Registra el primero en el panel de la izquierda.")+'</div>';
+    return;
+  }
+  box.innerHTML = list.map(p=>{
+    const st=STATUSES[p.status];
+    const delivered=p.status===STATUSES.length-1;
+    const color = delivered ? "background:rgba(47,203,147,.15);color:#1f9c6f" : "background:rgba(31,199,189,.14);color:#12A79E";
+    const opts=STATUSES.map((s,i)=>`<option value="${i}" ${i===p.status?"selected":""}>${s.k}</option>`).join("");
+    return `<div class="prow">
+      <div>
+        <div class="track">${esc(p.track)}</div>
+        <div class="who">${esc(p.name)||"—"} · <span class="tag" style="${color}">${st.k}</span></div>
+      </div>
+      <div class="actions">
+        <select class="selstat" onchange="updateStatus('${esc(p.track)}',this.value)" aria-label="Cambiar estado">${opts}</select>
+        <button class="icon-btn focusable" title="Eliminar" onclick="if(confirm('¿Eliminar ${esc(p.track)}?'))delPackage('${esc(p.track)}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+/* ============ INIT ============ */
+(function init(){
+  $("#year").textContent=new Date().getFullYear();
+  $("#fStatus").innerHTML=STATUSES.map((s,i)=>`<option value="${i}">${s.k}</option>`).join("");
+  // sembrar un ejemplo si la base está vacía (para que "Ver un ejemplo" funcione de una)
+  (async()=>{
+    const all=await loadAll();
+    if(!all["EUBR-DEMO01"]){
+      const now=Date.now(), day=86400000;
+      all["EUBR-DEMO01"]={track:"EUBR-DEMO01",name:"Cliente de ejemplo",phone:"",
+        desc:"1 caja de ropa y calzado",weight:"12.5",branch:"Santo Domingo",status:3,
+        history:[{status:0,date:now-4*day},{status:1,date:now-3*day},{status:2,date:now-2*day},{status:3,date:now-6*3600000}],
+        created:now-4*day};
+      await saveAll(all);
+    }
+  })();
+})();
+</script>
